@@ -1,0 +1,54 @@
+#ROOM_BEGIN
+id:1
+brief:Hall
+full: Du står i hallen, du kan gå åt syd eller öst.
+exit:s 3
+exit:ö 2
+#ROOM_END
+
+#ROOM_BEGIN
+id:2
+brief:Vardagsrum
+full: Du står i vardagsrummet, du kan gå åt söder eller väster.
+item:TV-kontroll 
+exit:v 1
+exit:s 4
+#ROOM_END
+
+#ROOM_BEGIN
+id:3
+brief:Kök
+full:Du står i köket. Du kan gå åt norr, öster eller söder.
+item:Stekspade
+exit:s 5
+exit:n 1
+exit:e 4
+#ROOM_END
+
+#ROOM_BEGIN
+id:4
+brief:Sovrum
+full:Du står i sovrummet. Du kan gå åt norr, söder eller väster.
+item:Bilnyckel
+exit:n 2
+exit:v 3
+exit:s 6
+#ROOM_END
+
+#ROOM_BEGIN
+id:5
+brief:Källare
+full:Du står i källaren. Du kan gå åt norr eller öster.
+item:Skiftnyckel
+exit:n 3
+exit:ö 6
+#ROOM_END
+
+#ROOM_BEGIN
+id:6
+brief:Badrum
+full:Du står i badrummet. Du kan gå åt norr eller väster.
+item:Hårfön
+exit:v 5
+exit:n 4 
+#ROOM_END
