@@ -3,11 +3,16 @@
 #include <string.h>
 #include <time.h>
 
+
+char *monsters[] = {"Ogre", "Elf", "Goblin", "Slime", };
 typedef struct room
 {
-    char roomId[10];
-    int rooms[10];
+    int roomId;
+    char brief[254];
+    char description[254];
+    int roads[10];
     int chest[10];
+    Enemy* enemy;
 } Room;
 
 typedef struct layer
@@ -30,9 +35,7 @@ typedef struct enemy
 {
 	char name[10];
 	int health;
-	int totalActions;
-	int actions[10][3]; // Actions are a array with 3 elements [Damaging, blocking, healing]
-	int intention[3];
+    int damage;
 }Enemy;
 
 typedef struct map
@@ -48,13 +51,13 @@ void push_layer(Map *m)
     m->head->next = temp;
 }
 
-void generate_rooms(Layer *l, int n)
+void generate_roads(Layer *l, int n)
 {
     for(int i = 0; i < n; ++i)
     {
         l->room_list[i] = malloc(sizeof(Room));
-        strcpy(l->room_list[i]->roomId, "hello");
-        l->room_list[i]->rooms[i] = i;
+        l->room_list[i]->roomId = i;
+        l->room_list[i]->roads[i] = 1;
         l->roomCount++;
     }
 }
@@ -70,71 +73,45 @@ void generate_map(Map *m)
 	Layer *temp = m->head;
     while(temp != NULL)
     {
-        generate_rooms(temp, 3);
+        generate_roads(temp, 3);
         temp = temp->next;
     }
+
 }
 
 int move(Player* p, int roadIndex)
 {
-	if (p->currentRoom->rooms[roadIndex] != 1 || roadIndex < 2)
-		return 1;
+	if (p->currentRoom->roads[roadIndex] != 1 && roadIndex > 3)
+    {
+        printf("Denna gång finns inte!");
+        return 1;
+    }
+		
 	
 	p->currentRoom = p->currentLayer->next->room_list[roadIndex];
 	p->currentLayer = p->currentLayer->next;
+    printf("Awoopie");
+    if(p->currentRoom->enemy != NULL)
+        combat(p->currentRoom->enemy, p);
 	return 0;
 }
 
-int enemy_attack(Enemy* monster, Player* hero){
-	
-}
-
-int generate_intention(Enemy* monster)
+void combat(Enemy* monster, Player* p)
 {
-	int index;
-	
-	if (monster->totalActions == 0)
-		return 1; // Cannot generate random action if monster does not have any actions
-		
-	srand(time(NULL)); // Sets the seed to the current time
-	index = rand() % monster->totalActions;
-	
-	for (int i = 0; i < 3; i++) // Copies an action into the monsters intention
-		monster->intention[i] = monster->actions[index][i]; 
-	
-	return 0;
-}
+    while(monster->health > 0)
+    {
+        p->health -= monster->damage;
+        monster->health -= 5;
+        printf("You took %d damage!\n", monster->damage);
+        printf("You dealt %d damage to the %s!\n", 5, monster->name);
+        printf("You have %d health left!", p->health);
 
-int display_intention(Enemy *monster)
-{
-	printf("%s tÃ¤nker ", monster->name);
-	if (monster->intention[0] != 0)
-		printf("skada dig med %d", monster->intention[0]);
-		
-	if (monster->intention[1] != 0){
-		if (monster->intention[0] != 0)
-			printf("och ");
-		
-		printf("skydda sig med %d ", monster->intention[1]);
-	}
-	
-	if (monster->intention[0] != 0 || monster->intention[1] != 0){
-		if (monster->intention[0] != 0)
-			printf("och ");
-		
-		printf("lÃ¤ka sig fÃ¶r %d ", monster->intention[1]);
-	}
-	
-	printf("\n");
-	return 0;
-}
-
-int combat(Enemy* monster, Player* hero)
-{
-	generate_intention(monster);
-	display_intention(monster);
-	
-	return 0;
+        if(p->health <= 0)
+        {
+            printf("You lose!");
+            exit(-1);
+        }
+    }
 }
 
 //LÃgger till item till spelarens inventory och tar bort den ifrÃ¥n positionen
@@ -208,15 +185,45 @@ void clear_room(Room *P1)
     }
 }
 
+int handle_combat(Player* p, char *str)
+{
+    return 0;
+}
+
+int handle_commands(Player* p, char *str)
+{
+
+    char *cmd = strtok(str, " ");
+    char *item = strtok(NULL, " ");
+
+    // printf("%s\n%s", cmd, item);
+
+    if(!strcmp(cmd, "i"))
+        printf("inventory");
+    if(!strcmp(cmd, "n"))
+        move(p, 0);
+    if(!strcmp(cmd, "e"))
+        move(p, 1);
+    if(!strcmp(cmd, "w"))
+        move(p, 2);
+    if(!strcmp(cmd, "ta"))
+        return 1;
+    if(!strcmp(cmd, "släpp"))
+        return 1;
+    
+    return -1;
+}
+
 int main()
 {
+    char cmd[15];
     Map *m = malloc(sizeof(Map));
     m->head = NULL;
     m->layerCount = 3;
 
     generate_map(m);
-    printf("%s\n", m->head->room_list[1]->roomId);
-    printf("%d", m->head->room_list[2]->rooms[1]);
+    // printf("%d\n", m->head->room_list[1]->roomId);
+    // printf("%d", m->head->room_list[2]->roads[1]);
     
     Player L;
     L.item_counter =0;
@@ -227,8 +234,6 @@ int main()
     clear_room(m->head->room_list[0]);
     m->head->room_list[0]->chest[1] = 5;
 
-    
-
     for (int i = 0; i<10;++i)
     {
         add_item(&L,m->head->room_list[0],i);
@@ -237,4 +242,15 @@ int main()
     remove_item(&L,m->head->room_list[0],2);
 
 	printf("%d ",m->head->room_list[0]->chest[1]);
+
+    L.currentLayer = m->head;
+    L.currentRoom = m->head->room_list[1];
+    // printf("%p\n", L.currentRoom);
+    while(1)
+    {
+        printf(">");
+        gets(cmd);
+        handle_commands(&L, cmd);
+        printf("\n");
+    }
 }
