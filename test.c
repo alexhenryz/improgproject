@@ -9,8 +9,8 @@ typedef struct room
 {
     int roomId;
     char brief[254];
-    char description[254];
-    int roads[10];
+    char full[254];
+    int exits[10];
     int chest[10];
     Enemy* enemy;
 } Room;
@@ -57,7 +57,7 @@ void generate_roads(Layer *l, int n)
     {
         l->room_list[i] = malloc(sizeof(Room));
         l->room_list[i]->roomId = i;
-        l->room_list[i]->roads[i] = 1;
+        l->room_list[i]->exits[i] = 1;
         l->roomCount++;
     }
 }
@@ -81,7 +81,7 @@ void generate_map(Map *m)
 
 int move(Player* p, int roadIndex)
 {
-	if (p->currentRoom->roads[roadIndex] != 1 && roadIndex > 3)
+	if (p->currentRoom->exits[roadIndex] != 1 && roadIndex > 3)
     {
         printf("Denna gång finns inte!");
         return 1;
@@ -196,22 +196,64 @@ int handle_commands(Player* p, char *str)
     char *cmd = strtok(str, " ");
     char *item = strtok(NULL, " ");
 
-    // printf("%s\n%s", cmd, item);
-
     if(!strcmp(cmd, "i"))
         printf("inventory");
-    if(!strcmp(cmd, "n"))
+    else if(!strcmp(cmd, "n"))
         move(p, 0);
-    if(!strcmp(cmd, "e"))
+    else if(!strcmp(cmd, "e"))
         move(p, 1);
-    if(!strcmp(cmd, "w"))
+    else if(!strcmp(cmd, "w"))
         move(p, 2);
-    if(!strcmp(cmd, "ta"))
+    else if(!strcmp(cmd, "ta"))
         return 1;
-    if(!strcmp(cmd, "släpp"))
+    else if(!strcmp(cmd, "släpp"))
         return 1;
-    
-    return -1;
+    else
+        return -1;
+}
+
+
+
+void read_world(Room rum[])
+{
+    FILE*file = fopen( "world.txt","r");
+
+    char row[254];
+    int is_room = 0;
+    char *key;
+    char *value;
+    int counter = 0;
+
+    while (!feof(file))
+    {
+
+        fgets(row,254,file);
+        if(!strcmp(row,"#ROOM_BEGIN\n")){
+            is_room = 1;
+
+        }
+
+        if(!strcmp(row,"#ROOM_END\n")){
+            is_room = 0;
+            continue;
+        }
+
+        if (is_room == 1){
+            key = strtok(row,":");
+            value = strtok(NULL,":");
+
+            if(!strcmp(key,"ID"))
+                strcpy(rum->roomId,value);
+            if(!strcmp(key,"brief"))
+                strcpy(rum->brief,value);
+            if(!strcmp(key,"full"))
+                strcpy(rum->full,value);
+            if(!strcmp(key,"exit"))
+                strcpy(rum->exits,value);
+
+        } 
+    ++counter;
+    }
 }
 
 int main()
