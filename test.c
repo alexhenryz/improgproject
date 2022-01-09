@@ -3,14 +3,20 @@
 #include <string.h>
 #include <time.h>
 
+typedef struct enemy
+{
+	char name[10];
+	int health;
+    int damage;
+}Enemy;
 
-char *monsters[] = {"Ogre", "Elf", "Goblin", "Slime", };
 typedef struct room
 {
     int roomId;
-    char brief[254];
-    char full[254];
-    int exits[10];
+    char brief[256];
+    char full[256];
+    char exits[10][10];
+    int exit_count;
     int chest[10];
     Enemy* enemy;
 } Room;
@@ -30,14 +36,6 @@ typedef struct player{
 	Layer* currentLayer;
 	Room* currentRoom;
 }Player;
-
-typedef struct enemy
-{
-	char name[10];
-	int health;
-    int damage;
-}Enemy;
-
 typedef struct map
 {
     int layerCount;
@@ -51,50 +49,32 @@ void push_layer(Map *m)
     m->head->next = temp;
 }
 
-void generate_roads(Layer *l, int n)
-{
-    for(int i = 0; i < n; ++i)
-    {
-        l->room_list[i] = malloc(sizeof(Room));
-        l->room_list[i]->roomId = i;
-        l->room_list[i]->exits[i] = 1;
-        l->roomCount++;
-    }
-}
+// void generate_roads(Layer *l, int n)
+// {
+//     for(int i = 0; i < n; ++i)
+//     {
+//         l->room_list[i] = malloc(sizeof(Room));
+//         l->room_list[i]->roomId = i;
+//         l->room_list[i]->exits[i] = 1;
+//         l->roomCount++;
+//     }
+// }
 
-void generate_map(Map *m)
-{
+// void generate_map(Map *m)
+// {
     
-    for(int i = 0; i < m->layerCount; ++i)
-    {
-        push_layer(m);
-    }
+//     for(int i = 0; i < m->layerCount; ++i)
+//     {
+//         push_layer(m);
+//     }
 
-	Layer *temp = m->head;
-    while(temp != NULL)
-    {
-        generate_roads(temp, 3);
-        temp = temp->next;
-    }
-
-}
-
-int move(Player* p, int roadIndex)
-{
-	if (p->currentRoom->exits[roadIndex] != 1 && roadIndex > 3)
-    {
-        printf("Denna gång finns inte!");
-        return 1;
-    }
-		
-	
-	p->currentRoom = p->currentLayer->next->room_list[roadIndex];
-	p->currentLayer = p->currentLayer->next;
-    printf("Awoopie");
-    if(p->currentRoom->enemy != NULL)
-        combat(p->currentRoom->enemy, p);
-	return 0;
-}
+// 	Layer *temp = m->head;
+//     while(temp != NULL)
+//     {
+//         generate_roads(temp, 3);
+//         temp = temp->next;
+//     }
+// }
 
 void combat(Enemy* monster, Player* p)
 {
@@ -112,6 +92,23 @@ void combat(Enemy* monster, Player* p)
             exit(-1);
         }
     }
+}
+
+int move(Player* p, int roadIndex)
+{
+	if (p->currentRoom->exits[roadIndex] != 1 && roadIndex > 3)
+    {
+        printf("Denna gång finns inte!");
+        return 1;
+    }
+		
+	
+	p->currentRoom = p->currentLayer->next->room_list[roadIndex];
+	p->currentLayer = p->currentLayer->next;
+    printf("Awoopie");
+    if(p->currentRoom->enemy != NULL)
+        combat(p->currentRoom->enemy, p);
+	return 0;
 }
 
 //LÃgger till item till spelarens inventory och tar bort den ifrÃ¥n positionen
@@ -196,98 +193,123 @@ int handle_commands(Player* p, char *str)
     char *cmd = strtok(str, " ");
     char *item = strtok(NULL, " ");
 
+    //TODO(Alex): Call for functions specific to the commands entered by the user
     if(!strcmp(cmd, "i"))
         printf("inventory");
     else if(!strcmp(cmd, "n"))
-        move(p, 0);
+        find_connections()
     else if(!strcmp(cmd, "e"))
-        move(p, 1);
+        printf("e");
     else if(!strcmp(cmd, "w"))
-        move(p, 2);
+        printf("w");
     else if(!strcmp(cmd, "ta"))
-        return 1;
+        printf("ta");
     else if(!strcmp(cmd, "släpp"))
-        return 1;
+        printf("släpp");
     else
         return -1;
 }
 
-
-
-void read_world(Room rum[])
+int find_connections(Player* p, char cmd)
 {
-    FILE*file = fopen( "world.txt","r");
+    Room *current_room = p->currentRoom;
+    char direction;
+    int roomId;
 
-    char row[254];
+    //TODO(Alex): If the player is in a room that is connected to the command they entered move them otherwise return and print not work
+    for(int i = 0; i < current_room->exit_count; i++)
+    {
+        direction = strtok(current_room->exits[i], " ");
+        roomId = atoi(strtok(NULL, " "));
+
+        if(!strcmp(direction, cmd))
+        {
+            move(p, roomId);
+            return 1;
+        }
+    }
+
+    printf("No room connected!!!!!!!!!!!!");
+    return 0;
+}
+
+int room_count(FILE* world)
+{
+    int count;
+    char row[256];
+    while(!feof(world))
+    {
+        fgets(row, 256, world);
+        if(!strncmp(row, "#ROOM_BEGIN", 11))
+            count++;
+    }
+    rewind(world);
+    return count;
+}
+
+void read_world(Room room[], int rooms, FILE* world)
+{
+    char row[256];
     int is_room = 0;
     char *key;
     char *value;
-    int counter = 0;
+    int index = 0;
+    int exit_count = 0;
 
-    while (!feof(file))
+    while(!feof(world))
     {
-
-        fgets(row,254,file);
-        if(!strcmp(row,"#ROOM_BEGIN\n")){
+        fgets(row, 256, world);
+        if(!strncmp(row, "#ROOM_BEGIN", 11))
+        {
             is_room = 1;
-
         }
-
-        if(!strcmp(row,"#ROOM_END\n")){
+        
+        if(!strncmp(row, "#ROOM_END", 9))
+        {
+            room[index].exit_count = exit_count;
             is_room = 0;
-            continue;
+            exit_count = 0;
+            index++;
         }
 
-        if (is_room == 1){
-            key = strtok(row,":");
-            value = strtok(NULL,":");
+        if(is_room)
+        {
+            key = strtok(row, ":");
+            value = strtok(NULL,  ":");
 
-            if(!strcmp(key,"ID"))
-                strcpy(rum->roomId,value);
-            if(!strcmp(key,"brief"))
-                strcpy(rum->brief,value);
-            if(!strcmp(key,"full"))
-                strcpy(rum->full,value);
-            if(!strcmp(key,"exit"))
-                strcpy(rum->exits,value);
-
-        } 
-    ++counter;
+            if(!strcmp(key, "id"))
+                room[index].roomId = atoi(value);
+            else if(!strcmp(key, "brief"))
+            {
+                strcpy(room[index].brief, value);
+            }
+            else if(!strcmp(key, "full"))
+                strcpy(room[index].full, value);
+            else if(!strcmp(key, "exit"))
+            {
+                strcpy(room[index].exits[exit_count], value);
+                exit_count++;
+            }
+        }
     }
 }
 
 int main()
 {
     char cmd[15];
-    Map *m = malloc(sizeof(Map));
-    m->head = NULL;
-    m->layerCount = 3;
 
-    generate_map(m);
-    // printf("%d\n", m->head->room_list[1]->roomId);
-    // printf("%d", m->head->room_list[2]->roads[1]);
-    
+    FILE* world = fopen("world.txt","r");
+    Room rum[15];
+
     Player L;
-    L.item_counter =0;
-    
+    L.item_counter = 0;
 
-    release_all(&L);
-    // Bara sÃ¥ att alla slots pÃ¥ plats 1 Ã¤r 0. Annars onÃ¶dig funktion.
-    clear_room(m->head->room_list[0]);
-    m->head->room_list[0]->chest[1] = 5;
+    int count = room_count(world);
+    printf("Rooms: %d\n", count);
+    Room room[count];
 
-    for (int i = 0; i<10;++i)
-    {
-        add_item(&L,m->head->room_list[0],i);
-    }
-    remove_item(&L,m->head->room_list[0],4);
-    remove_item(&L,m->head->room_list[0],2);
+    read_world(room, count, world);
 
-	printf("%d ",m->head->room_list[0]->chest[1]);
-
-    L.currentLayer = m->head;
-    L.currentRoom = m->head->room_list[1];
-    // printf("%p\n", L.currentRoom);
     while(1)
     {
         printf(">");
