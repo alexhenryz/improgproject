@@ -94,20 +94,11 @@ void combat(Enemy* monster, Player* p)
     }
 }
 
-int move(Player* p, int roadIndex)
+int move(Player* p, int roomId, Room* room[])
 {
-	if (p->currentRoom->exits[roadIndex] != 1 && roadIndex > 3)
-    {
-        printf("Denna gång finns inte!");
-        return 1;
-    }
-		
 	
-	p->currentRoom = p->currentLayer->next->room_list[roadIndex];
-	p->currentLayer = p->currentLayer->next;
-    printf("Awoopie");
-    if(p->currentRoom->enemy != NULL)
-        combat(p->currentRoom->enemy, p);
+	p->currentRoom = room[roomId-1];
+    printf("%s\n", p->currentRoom->brief);
 	return 0;
 }
 
@@ -187,44 +178,19 @@ int handle_combat(Player* p, char *str)
     return 0;
 }
 
-int handle_commands(Player* p, char *str)
-{
-
-    char *cmd = strtok(str, " ");
-    char *item = strtok(NULL, " ");
-
-    //TODO(Alex): Call for functions specific to the commands entered by the user
-    if(!strcmp(cmd, "i"))
-        printf("inventory");
-    else if(!strcmp(cmd, "n"))
-        find_connections()
-    else if(!strcmp(cmd, "e"))
-        printf("e");
-    else if(!strcmp(cmd, "w"))
-        printf("w");
-    else if(!strcmp(cmd, "ta"))
-        printf("ta");
-    else if(!strcmp(cmd, "släpp"))
-        printf("släpp");
-    else
-        return -1;
-}
-
-int find_connections(Player* p, char cmd)
+int find_connections(Player* p, char* cmd, Room* room[])
 {
     Room *current_room = p->currentRoom;
-    char direction;
+    char* direction;
     int roomId;
-
     //TODO(Alex): If the player is in a room that is connected to the command they entered move them otherwise return and print not work
     for(int i = 0; i < current_room->exit_count; i++)
     {
         direction = strtok(current_room->exits[i], " ");
         roomId = atoi(strtok(NULL, " "));
-
         if(!strcmp(direction, cmd))
         {
-            move(p, roomId);
+            move(p, roomId, room);
             return 1;
         }
     }
@@ -247,7 +213,7 @@ int room_count(FILE* world)
     return count;
 }
 
-void read_world(Room room[], int rooms, FILE* world)
+void read_world(Room *room[], int rooms, FILE* world)
 {
     char row[256];
     int is_room = 0;
@@ -261,12 +227,13 @@ void read_world(Room room[], int rooms, FILE* world)
         fgets(row, 256, world);
         if(!strncmp(row, "#ROOM_BEGIN", 11))
         {
+            room[index] = malloc(sizeof(Room));
             is_room = 1;
         }
         
         if(!strncmp(row, "#ROOM_END", 9))
         {
-            room[index].exit_count = exit_count;
+            room[index]->exit_count = exit_count;
             is_room = 0;
             exit_count = 0;
             index++;
@@ -278,20 +245,45 @@ void read_world(Room room[], int rooms, FILE* world)
             value = strtok(NULL,  ":");
 
             if(!strcmp(key, "id"))
-                room[index].roomId = atoi(value);
+                room[index]->roomId = atoi(value);
             else if(!strcmp(key, "brief"))
             {
-                strcpy(room[index].brief, value);
+                strcpy(room[index]->brief, value);
             }
             else if(!strcmp(key, "full"))
-                strcpy(room[index].full, value);
+                strcpy(room[index]->full, value);
             else if(!strcmp(key, "exit"))
             {
-                strcpy(room[index].exits[exit_count], value);
+                strcpy(room[index]->exits[exit_count], value);
                 exit_count++;
             }
         }
     }
+}
+
+int handle_commands(Player* p, char *str, Room* room[])
+{
+
+    char *cmd = strtok(str, " ");
+    char *item = strtok(NULL, " ");
+
+    //TODO(Alex): Call for functions specific to the commands entered by the user
+    if(!strcmp(cmd, "i"))
+        printf("inventory");
+    else if(!strcmp(cmd, "n"))
+        find_connections(p, cmd, room);
+    else if(!strcmp(cmd, "e"))
+        find_connections(p, cmd, room);
+    else if(!strcmp(cmd, "w"))
+        find_connections(p, cmd, room);
+    else if(!strcmp(cmd, "s"))
+        find_connections(p, cmd, room);
+    else if(!strcmp(cmd, "ta"))
+        printf("ta");
+    else if(!strcmp(cmd, "släpp"))
+        printf("släpp");
+    else
+        return -1;
 }
 
 int main()
@@ -299,22 +291,22 @@ int main()
     char cmd[15];
 
     FILE* world = fopen("world.txt","r");
-    Room rum[15];
 
     Player L;
     L.item_counter = 0;
 
     int count = room_count(world);
-    printf("Rooms: %d\n", count);
-    Room room[count];
+    Room *room[count];
 
     read_world(room, count, world);
+
+    L.currentRoom = room[0];
 
     while(1)
     {
         printf(">");
         gets(cmd);
-        handle_commands(&L, cmd);
+        handle_commands(&L, cmd, room);
         printf("\n");
     }
 }
