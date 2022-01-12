@@ -1,0 +1,3 @@
+/home/EDUNET.ORU.SE/delyoh211/Desktop/Spel/Build/CMakeFiles/rebuild_cache.dir
+/home/EDUNET.ORU.SE/delyoh211/Desktop/Spel/Build/CMakeFiles/edit_cache.dir
+/home/EDUNET.ORU.SE/delyoh211/Desktop/Spel/Build/CMakeFiles/textspel.dir

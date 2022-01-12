@@ -1,0 +1,1 @@
+/usr/bin/cc  -std=c99 -Wall -g   CMakeFiles/textspel.dir/textspel.c.o CMakeFiles/textspel.dir/world.c.o CMakeFiles/textspel.dir/player.c.o  -o textspel 
