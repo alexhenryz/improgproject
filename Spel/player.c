@@ -7,7 +7,7 @@
 
 
 
-//funktion för att släppa spelaren ska kunna droppa item
+//funktion för att spelaren ska kunna droppa item
 int drop_item(Player *p, Room* r){ 
 	char item[10];
 	printf("Vilket item vill du släppa?\n");
