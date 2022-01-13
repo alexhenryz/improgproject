@@ -6,29 +6,29 @@
 #include "game.h"
 
 
-// Läser igenom filen rad för rad och räknar hur många gånger raden "#ROOM_BEGIN" finns med för att se hur många rum som finns
+// Räknar antalet rum som finns i filen. Returnerar sedan antalet rum.
 int room_count(FILE* world)
 {
     int count;
-    char row[256]; // Lagrar raden som läses in
+    char row[256];
     while(!feof(world))
     {
-        fgets(row, 256, world); // Läser 256 karaktärer på raden från filen world
+        fgets(row, 256, world);
         if(!strncmp(row, "#ROOM_BEGIN", 11))
             count++;
     }
-    rewind(world); // Skickar tillbaka läsaren till toppen av filen
-    return count; // Returnerar hur många rum som finns i filen
+    rewind(world);
+    return count;
 }
 
-
+// Kollar om om det är en möjlig förflyttning av spelaren. Om så är fallet flyttar spelaren dit.
 int find_connections(Player* p, char cmd[], Room rooms[])
 {
-    Room *current_room = p->currentRoom;
+	Room *current_room = p->currentRoom;
     char direction;
     int roomId;
 	
-    //TODO(Alex): If the player is in a room that is connected to the command they entered move them otherwise return and print not work
+    
     for(int i = 0; i < current_room->exit_count; i++)
     {
         direction = current_room->exits[i][0];
@@ -37,16 +37,16 @@ int find_connections(Player* p, char cmd[], Room rooms[])
 		
         if(direction == cmd[0])
         {
-            move(p, roomId, rooms);
+            move(p, roomId, rooms); // Om rummen har en passage mellan sig förflyttas spelaren det rummet och returner sedan 1.
             return 1;
         }
     }
 
-    printf("No room connected!!!!!!!!!!!!");
+    printf("No room connected!!!!!!!!!!!!"); // Om rummen inte har en passage returneras 0.
     return 0;
 }
 
-
+// Läser igenom world. Skapar structar till varje rum, lägger dom i en lista.
 void read_world(Room rum[], int rooms, FILE* world)
 {
     char row[256];
@@ -59,12 +59,12 @@ void read_world(Room rum[], int rooms, FILE* world)
     while(!feof(world))
     {
         fgets(row, 256, world);
-        if(!strncmp(row, "#ROOM_BEGIN", 11))
+        if(!strncmp(row, "#ROOM_BEGIN", 11)) //Letar starttecken av rum i filen.
         {
             is_room = 1;
         }
         
-        if(!strncmp(row, "#ROOM_END", 9))
+        if(!strncmp(row, "#ROOM_END", 9)) // Letar sluttecken av rum i filen.
         {
             rum[index].exit_count = exit_count;
             is_room = 0;
@@ -72,7 +72,7 @@ void read_world(Room rum[], int rooms, FILE* world)
             index++;
         }
 
-        if(is_room)
+        if(is_room)	//Kopierar alla information till structen. Om läsningen är i ett rum.
         {
             key = strtok(row, ":");
             value = strtok(NULL,  ":");
@@ -99,7 +99,8 @@ void read_world(Room rum[], int rooms, FILE* world)
     }
 }
 
-int win_check(Player* p, Room* r){
+// Kollar om Bilnyckeln ligger i hallen. Returnerar 1 om så är fallet. 
+int win_check(Player* p, Room* r){  
 	char a[] = {"Bilnyckel"};
 	if (p->currentRoom->roomId == 1){
 		if (r->item_counter >=1){
@@ -112,9 +113,10 @@ int win_check(Player* p, Room* r){
 			}
 		}
 	
-	return 0;
+	return 0; // Returnerar 0 om bilnyckeln inte är i hallen.
 }
 
+// Frågar efter namn av spelaren. Skriver sedan ut instruktionerna för spelet.
 void startscreen(Player *p){
     system("clear");
     printf("\t================================\n\t=====   SPELET HAR BÖRJAT  =====\n\t================================\n");
