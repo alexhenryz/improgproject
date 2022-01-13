@@ -6,24 +6,25 @@
 #include "game.h"
 
 
-
+// Läser igenom filen rad för rad och räknar hur många gånger raden "#ROOM_BEGIN" finns med för att se hur många rum som finns
 int room_count(FILE* world)
 {
     int count;
-    char row[256];
+    char row[256]; // Lagrar raden som läses in
     while(!feof(world))
     {
-        fgets(row, 256, world);
+        fgets(row, 256, world); // Läser 256 karaktärer på raden från filen world
         if(!strncmp(row, "#ROOM_BEGIN", 11))
             count++;
     }
-    rewind(world);
-    return count;
+    rewind(world); // Skickar tillbaka läsaren till toppen av filen
+    return count; // Returnerar hur många rum som finns i filen
 }
+
 
 int find_connections(Player* p, char cmd[], Room rooms[])
 {
-	Room *current_room = p->currentRoom;
+    Room *current_room = p->currentRoom;
     char direction;
     int roomId;
 	
