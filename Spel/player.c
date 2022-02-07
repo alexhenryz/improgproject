@@ -3,17 +3,17 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "game.h"
+#include "../game.h"
 
 
 
 //funktion för att spelaren ska kunna droppa item
 int drop_item(Player *p, Room* r){ 
-	char item[10];
+	char item[25];
 	printf("Vilket item vill du släppa?\n");
 	scanf("%s",item);
 	
-	for (int i = 0; i < p->item_counter; i++){ //for loop som körs om spelaren har något item på sig
+	for (int i = 0; i <= p->item_counter; i++){ //for loop som körs om spelaren har något item på sig
 			if (!strcmp(p->inventory[i], item)){ //if sats som kollar om föremålet användaren skriver in finns i inventory
 				if (r->item_counter + 1 >= 10){ //if sats som kollar om du kan släppa item på just den platsen
 					printf("Du kan inte slänga några föremål här\n");
@@ -33,11 +33,11 @@ int drop_item(Player *p, Room* r){
 
 // Flyttar items från rummet till spelaren
 int pick_up(Player* p, Room* r){
-	char item[10];
+	char item[25];
 	printf("Vilket item vill du ta upp?\n");
 	scanf("%s",item);
 	
-	for (int i = 0; i < r->item_counter; i++){//samma princip som drop_item funktionen men nu från rummet till spelaren 
+	for (int i = 0; i <= r->item_counter; i++){//samma princip som drop_item funktionen men nu från rummet till spelaren 
 			if (!strncmp(r->chest[i], item, strlen(item))){//kollar om item som vill plockas upp finns i rummet
 				if (p->item_counter + 1 >= 10){ //if sats som kollar att spelarens inventory inte är full
 					printf("Du kan inte ta upp fler föremål\n");
@@ -47,6 +47,7 @@ int pick_up(Player* p, Room* r){
 				strcpy(p->inventory[p->item_counter], item);//item kopieras och läggs in i spelarens inventory
 				p->item_counter++;
 				printf("Du plockade upp %s \n", item);
+				r->item_counter--;
 				return 0;
 			}
 			}
@@ -76,7 +77,7 @@ int invent(Player* p){
 // Skriver ut alla föremål som finns i rummet till spelaren
 int look(Room* r){
 	if (r->item_counter <= 0){ 
-		printf("Du leter, men hittar ingenting i rummet \n");
+		printf("Du letar, men hittar ingenting i rummet \n");
 		return 1;
 	}
 	//identisk funktion som invent funktionen men här är det rummets items som skrivs ut

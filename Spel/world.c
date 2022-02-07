@@ -3,13 +3,13 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "game.h"
+#include "../game.h"
 
 
 // Räknar antalet rum som finns i filen. Returnerar sedan antalet rum.
 int room_count(FILE* world)
 {
-    int count;
+    int count = 0;
     char row[256];
     while(!feof(world))
     {
@@ -42,7 +42,7 @@ int find_connections(Player* p, char cmd[], Room rooms[])
         }
     }
 
-    printf("No room connected!!!!!!!!!!!!"); // Om rummen inte har en passage returneras 0.
+    printf("Finns inget rum i den riktningen"); // Om rummen inte har en passage returneras 0.
     return 0;
 }
 
@@ -105,9 +105,11 @@ int win_check(Player* p, Room* r){
 	if (p->currentRoom->roomId == 1){
 		if (r->item_counter >=1){
 			for(int i = 0; i <= r->item_counter; i++){
-				if(!strcmp(a, r->chest[i])){
-					printf("\nDu kan ge dig iväg nu!\n");
-					return 1;
+                printf("buh");
+				if(!strcmp(a, r->chest[i]))
+                    {
+					    printf("\nDu kan ge dig iväg nu!\n");
+					    return 1;
 					}
 				}
 			}
@@ -132,6 +134,5 @@ void startscreen(Player *p){
     system("clear");
     printf("Du är sen till tentan, du skyndar ut till bilen men inser att du har glömt bilnyckeln.\nDu förstår att du måste skynda dig in igen för att hitta bilnyckeln, men\ndu har glömt bort vart du har lagt den!\n\n");
     printf("Hitta bilnyckeln och ta med den tillbaka!!!\n\n");
-
 }
 

@@ -12,7 +12,7 @@ typedef struct Room
 typedef struct player{
 	char name[20];
     int health;
-    char inventory[10][10];
+    char inventory[10][30];
     int item_counter;
 	Room* currentRoom;
 }Player;
