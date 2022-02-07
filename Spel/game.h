@@ -18,26 +18,24 @@ typedef struct player{
 }Player;
 
 
-int drop_item(Player *p, Room* r);
+int drop_item(Player *p, Room* r);	//funktion för att spelaren ska kunna droppa item
 
-int pick_up(Player* p, Room* r);
+int pick_up(Player* p, Room* r);	// Flyttar items från rummet till spelaren
 
-int invent(Player* p);
+int invent(Player* p);		// Skriver ut alla föremål som spelaren har på sig
 
-int add_item(Room* r, char item[]);
+int look(Room* r);		// Skriver ut alla föremål som finns i rummet till spelaren
 
-int look(Room* r);
+int move(Player* p, int ID, Room rooms[]);	// Tries to move the player to the given room id, returns 0 succsession
 
-int move(Player* p, int ID, Room rooms[]);
+int handle_commands(Player* p, char *str, Room rooms[]);	//funktion för commandon inmatat av spelaren
 
-int handle_commands(Player* p, char *str, Room rooms[]);
+int room_count(FILE* world);		// Räknar antalet rum som finns i filen. Returnerar sedan antalet rum.
 
-int room_count(FILE* world);
+int find_connections(Player* p, char cmd[], Room rooms[]);	// Kollar om om det är en möjlig förflyttning av spelaren. Om så är fallet flyttar spelaren dit.
 
-int find_connections(Player* p, char cmd[], Room rooms[]);
+void read_world(Room rum[], int rooms, FILE* world);		// Läser igenom world. Skapar structar till varje rum, lägger dom i en lista.
 
-void read_world(Room rum[], int rooms, FILE* world);
+int win_check(Player* p, Room* r);		// Kollar om Bilnyckeln ligger i hallen. Returnerar 1 om så är fallet. 
 
-int win_check(Player* p, Room* r);
-
-void startscreen(Player *p);
+void startscreen(Player *p);		// Frågar efter namn av spelaren. Skriver sedan ut instruktionerna för spelet.
